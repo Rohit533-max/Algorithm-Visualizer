@@ -7,7 +7,7 @@ def algochooser(numbers,paint, lable_comparison,something,TYPE_OF_DRAW,speed):
     TYPE = TYPE_OF_DRAW
     #if something == "bubble_sort":
     lable_comparison.configure(text = "Number of comparisons")
-    bubble_sort(numbers,paint,lable_comparison,speed)
+    insertion_sort(numbers,paint,lable_comparison,speed)
     if TYPE == 0:
         paint(["lawn green"] * len(numbers))
 
@@ -37,4 +37,23 @@ def bubble_sort(numbers,paint,label_comparison,speed):
         if not is_swapped:
             break
         time.sleep(1/speed)
+
+def insertion_sort(numbers,paint,label_comparison,speed):
+    global cmp, TYPE
+
+    for i in range(1,len(numbers)):
+        key = numbers[i]
+        j = i -1
+        while j >=0 and numbers[j] > key:
+            numbers[j+1] = numbers[j]
+            j-=1
+            cmp +=1
+        if TYPE == 0:
+            colors = ["#cc0000" if x == key else "antique white" for x in numbers]
+        numbers[j + 1] = key
+        paint(colors)
+        label_comparison.configure(text = "Number of comparisons: "+ str(cmp))
+        time.sleep(1/speed)
+
+
 

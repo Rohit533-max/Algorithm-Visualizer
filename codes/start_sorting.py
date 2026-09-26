@@ -54,7 +54,7 @@ class Sorting:
         self.canva.pack(side='left')
 
         #creating a drop down menu for algorithm selection
-        self.algo_var = "bubble_sort"
+        self.algo_var = "insertion_sort"
 
         #label for showing the comparisons
         self.label_comparison = Label(self.Frame1,text="Number of comparison : 0", bg="light salmon", fg="yellow", font=("Arial",10))
