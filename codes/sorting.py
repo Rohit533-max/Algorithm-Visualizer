@@ -71,6 +71,10 @@ def selection_sort(numbers,paint,label_comparison,speed):
         #swap the min_index to its correct position
         numbers[i],numbers[min_index] = numbers[min_index],numbers[i]
 
+
+    
+    
+
 def mergesort(number, left, right, paint, label_comparison, speed):
     if left >= right:
         return
