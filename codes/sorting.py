@@ -7,7 +7,7 @@ def algochooser(numbers,paint, label_comparison,something,TYPE_OF_DRAW,speed):
     TYPE = TYPE_OF_DRAW
     #if something == "bubble_sort":
     label_comparison.configure(text = "Number of comparisons")
-    mergesort(numbers, 0, len(numbers)-1, paint, label_comparison, speed)
+    quicksort(numbers, 0, len(numbers)-1, paint, label_comparison, speed)
     paint(["lawn green"] * len(numbers))
 
     cmp = 0
@@ -70,10 +70,6 @@ def selection_sort(numbers,paint,label_comparison,speed):
 
         #swap the min_index to its correct position
         numbers[i],numbers[min_index] = numbers[min_index],numbers[i]
-
-
-    
-    
 
 def mergesort(number, left, right, paint, label_comparison, speed):
     if left >= right:
@@ -147,3 +143,52 @@ def merge(number, left, middle, right, paint, label_comparison, speed):
 
     paint(colors)
     time.sleep(1 / speed)
+
+def quicksort(number,start,end,paint,label_comparison,speed):
+    if start < end:
+        pivotIdx = partition(number,start,end,paint,label_comparison,speed)
+        quicksort(number,start,pivotIdx-1,paint,label_comparison,speed)
+        quicksort(number,pivotIdx+1,end,paint,label_comparison,speed)
+
+
+def partition(number,start,end,paint,label_comparison,speed):
+    global cmp 
+    pivot = number[end]
+    i = start -1
+    color = []
+
+    for val in range(len(number)):
+        if val == start or val == end -1:
+            color.append("#cc0000")
+        elif val == end:
+            color.append("yellow")
+        else:
+            color.append("antique white")
+
+    paint(color)
+    for j in range(start,end):
+        if number[j] <= pivot:
+            i+=1
+            number[i],number[j] = number[j],number[i]
+        time.sleep(1/speed)
+        cmp +=1
+        color =[]
+
+        for c in range(len(number)):
+            if c == start or c == end -1:
+                color.append("#cc0000")
+            elif c == end:
+                color.append("yellow")
+            else:
+                color.append("antique white")
+
+
+        paint(color)
+        label_comparison.configure(text="No. of comparisons: " + str(cmp))
+
+    #placing the pivot to right index
+    i+=1
+    number[i],number[end] = number[end],number[i]
+    label_comparison.configure(text="No. of comparisons: " + str(cmp))
+
+    return i
