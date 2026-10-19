@@ -5,11 +5,12 @@ from sorting import algochooser
 from random import sample,shuffle
 
 class Sorting:
-    def __init__(self,root):
+    def __init__(self,root,AlgonameVar):
         self.root = root
 
         #self.AlgoName = AlgoName
-
+        self.AlgonameVar = AlgonameVar
+        
         #window size
         self.x,self.y= 1200,700
         self.root.geometry(f"{self.x}x{self.y}")
@@ -29,10 +30,9 @@ class Sorting:
         self.speed = IntVar()
         self.speed.set(10)
 
-        #graph_type 0 means bar graph and 1 means color graph
+        #graph_type 
         self.graph_type = IntVar()
-        self.graph_type.set(0)
-        self.TYPE = self.graph_type.get()
+
 
         #starting point
         self.starting_point = 2
@@ -45,7 +45,7 @@ class Sorting:
         self.information = {'Bubble Sort': "Worst Case:O(n²)\nAverage Case:O(n²)\nBest Case:O(n)"}
 
         #algorithm names
-        self.algorithms = ['Bubble sort']
+        self.algorithm = ['Bubble sort',"Selection sort", "Insertion sort", "Merger sort", "Quick sort"]
 
         #canvas of the graph
         self.Frame2 = Frame(root,width=self.canvasX, height=self.canvasY,bg="purple")
@@ -105,10 +105,6 @@ class Sorting:
 
     def sort_list(self):
         self.label_comparison.configure(text = "Number of Comparisons : 0")
-        startsort = Thread(target=algochooser, args=(self.numbers,self.paint,self.label_comparison,self.algo_var,self.TYPE,self.speed.get()))
+        startsort = Thread(target=algochooser, args=(self.numbers,self.paint,self.label_comparison,self.AlgonameVar,self.speed.get()))
         startsort.start()
 
-
-root = Tk()
-s = Sorting(root)
-root.mainloop()

@@ -1,9 +1,8 @@
 import time
-TYPE = 0
 cmp = 0
 
 def algochooser(numbers,paint, label_comparison,something,speed):
-    global cmp, TYPE
+    global cmp
 
     if something == "Bubble Sort":
         label_comparison.configure(text = "No. of comparisons:0")

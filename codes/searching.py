@@ -1,8 +1,21 @@
 import time
 cmp = 0
 
+def algochooser(nums,paint,label_comparision,label_index,algo_name,speed,searched_element):
+    global cmp
 
+    if algo_name == 'Linear Search':
+        label_comparision.configure(text = "No of comparisions: 0")
+        label_index.configure(text = "")
+        linear_search(nums,paint,label_comparision,label_index,speed,int(searched_element))
+        cmp = 0
 
+    elif algo_name == 'Binary Search':
+        label_comparision.configure(text = "No of comparisions: 0")
+        label_index.configure(text ="")
+        binary_search(nums,paint,label_comparision,label_index,speed, int(searched_element))
+
+    
 def linear_search(nums,paint,label_comparision,lable_index,speed,searched_element):
     global cmp
     for i in range(len(nums)):
