@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from start_sorting import *
+from start_searching import *
+
 class Window:
     def __init__(self,root):
         self.root = root
@@ -24,7 +26,7 @@ class Window:
         root.geometry(f"{width}x{height}+{x}+{y}")
 
         #dictionary of algorithms and their list
-        self.dict = {"Sorting": ["Bubble sort", "Selection sort", "Insertion sort", "Merge sort", "Quick sort"],
+        self.dict = {"Sorting": ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"],
                      "Searching": ["Linear Search","Binary Search"]}
         #two dropdown
         self.algoType = StringVar()
@@ -80,13 +82,19 @@ class Window:
             sort_window = Tk()
 
             #send it to start_sorting.py file
-            Sorting(sort_window,self.algoType.get())
+            Sorting(sort_window,self.algo.get())
+            sort_window.mainloop()
+        elif self.algoType.get() == "Searching":
+            sort_window = Tk()
+
+            #send it to start_sorting.py file
+            Searching(sort_window,self.algo.get())
             sort_window.mainloop()
 
     def Run1(self):
         #if nothing is selected show an error
         if self.algoType.get() == "Select Algorithm Type":
-            messagebox.showerror("Please select an Algorithm Type.")
+            messagebox.showerror("Error!", "Please select an Algorithm type.")
 
         #if sorting is selected
         elif self.algoType.get() == "Sorting":
@@ -96,7 +104,12 @@ class Window:
             #go to the Run() function
             self.Run2()
 
-root = Tk()
-app = Window(root)
-root.mainloop()
-        
+        #if searching is selected
+        elif self.algoType.get() == "Searching":
+            #destroy the main window
+            self.root.destroy()
+
+            #go to the Run function
+            self.Run2()
+
+  

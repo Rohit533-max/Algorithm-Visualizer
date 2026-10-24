@@ -3,6 +3,7 @@ from tkinter import messagebox
 from searching import algochooser
 from random import sample, shuffle
 from threading import *
+import Start_Threading
 
 class Searching:
     def __init__(self,root,AlgonameVar):
@@ -62,25 +63,31 @@ class Searching:
         self.frame_btn1.place(relx= 0.0, rely=0.14)
 
         # Button for generating new array
-        self.arr_btn = Button(self.frame_btn1, text= "Generate", padx= 13, pady=3,bg='RoyalBlue', fg='azure',cursor="hand2")
+        self.arr_btn = Button(self.frame_btn1, text= "Generate", padx= 13, pady=3,bg='RoyalBlue', fg='azure',cursor="hand2", command=self.new_list)
         self.arr_btn.place(relx=0.15, rely=0.14)
 
         # Button for shuffle array
-        self.sfl_btn = Button(self.frame_btn1, text = "Shuffle", padx=13, pady = 3, bg='RoyalBlue',fg='azure',cursor='hand2')
+        self.sfl_btn = Button(self.frame_btn1, text = "Shuffle", padx=13, pady = 3, bg='RoyalBlue',fg='azure',cursor='hand2', command=self.shuffle_list)
         self.sfl_btn.place(relx=0.60, rely=0.14)
 
         #text box for the search entry
-        self.search_element = Entry(self.Frame1, width=26, bg= "white", fg="black")
-        self.search_element.insert(END,'Enter an element to search: ')
-        self.search_element.pack_propagate(0)
+        # placeholder text for the search box
+        self.placeholder = "Enter an element to search"
+
+        self.search_element = Entry(self.Frame1, width=26, bg="white", fg="grey")
+        self.search_element.insert(0, self.placeholder)
         self.search_element.place(relx=0.22, rely=0.22)
+
+        # run these functions when the box gains or loses focus
+        self.search_element.bind("<FocusIn>", self.clear_placeholder)
+        self.search_element.bind("<FocusOut>", self.add_placeholder)
 
         # label for showing the number of comparisions
         self.label_comparision = Label(self.Frame1, text= "Number of comparisions: 0", bg= "light salmon", fg="midnight blue")
         self.label_comparision.place(relx=0.1, rely=0.65)
 
         # label for showing the searched element index
-        self.label_index = Label(self.Frame1, width= 5 ,text = "", bg = "light salmon")
+        self.label_index = Label(self.Frame1, width= 25 ,text = " ", bg="Yellow")
         self.label_index.place(relx=0.2, rely=0.58)
 
         #Frame for algorithm info
@@ -88,13 +95,13 @@ class Searching:
         self.algo_info.grid_propagate(0)
         self.algo_info.place(relx=0.03, rely=0.7)
 
-        # # Label for algorithm info
-        # self.algo_label = Label(self.algo_info, bg="tomato", fg = "white", text= self.information[self.AlgonameVar.get()])
-        # self.algo_label.pack_propagate(0)
-        # self.algo_label.place(relx=0.06, rely=0.25)
+        # Label for algorithm info
+        self.algo_label = Label(self.algo_info, bg="tomato", fg = "white", text= self.information.get(self.AlgonameVar,""))
+        self.algo_label.pack_propagate(0)
+        self.algo_label.place(relx=0.06, rely=0.25)
 
         #Back button
-        self.back_btn = Button(self.Frame1, bg= "RoyalBlue", fg="white", text= "Back")
+        self.back_btn = Button(self.Frame1, bg= "RoyalBlue", fg="white", text= "Back", command=self.back)
         self.back_btn.pack_propagate(0)
         self.back_btn.place(relx=0.2, rely=0.94)
 
@@ -117,14 +124,19 @@ class Searching:
             self.start_point += self.rec_width
 
         # Creating the search button
-        self.search_btn = Button(self.Frame1, text="Search", padx= 13, pady=3, bg="RoyalBlue", fg="azure")
+        self.search_btn = Button(self.Frame1, text="Search", padx= 13, pady=3, bg="RoyalBlue", fg="azure", command=self.search_list)
         self.search_btn.place(relx=0.20, rely=0.05)
 
 
     #Function for back button to main window
     def back(self):
-        pass
+        self.root.destroy()
 
+        Process = Start_Threading.START()
+        Process.start()
+        
+        
+    
     # Function for painting the bars
     def paint(self,colortype):
         #delete the previous graph
@@ -136,7 +148,7 @@ class Searching:
         # width of each bar
         for i in range(len(self.numbers)):
             self.canva.create_rectangle(
-                self.starting_point, self.CanvasY - self.numbers[i], self.start_point + self.rec_width, self.CanvasY, fill=colortype[i])
+                self.start_point, self.CanvasY - self.numbers[i], self.start_point + self.rec_width, self.CanvasY, fill=colortype[i])
             self.label_value = Label(self.canva,text= self.numbers[i], bg="sandy brown", fg="white")
             self.canva.create_window(self.start_point + 16, self.CanvasY - self.numbers[i] +12, window=self.label_value)
             self.start_point += self.rec_width
@@ -148,10 +160,10 @@ class Searching:
     def new_list(self):
         numbers = []
         self.label_comparision.configure(text = "Number of comparisions: 0")
-        self.lable_index.configure(text="")
+        self.label_index.configure(text="")
         # enter random numbers in the new array
 
-        self.numbers = sample(range(20, self.CanvasY - 20), self.speed_var.get())
+        self.numbers = sample(range(20, self.CanvasY - 20), self.size_var.get())
 
         # shuffle the numbers
         shuffle(list(set(numbers)))
@@ -163,7 +175,7 @@ class Searching:
     def shuffle_list(self):
         shuffle(self.numbers)
         self.label_comparision.configure(text="Number of comparisions: 0")
-        self.lable_index.configure(text="")
+        self.label_index.configure(text="")
 
         colortype = ['sandy brown' for x in self.numbers]
         self.paint(colortype)
@@ -171,15 +183,20 @@ class Searching:
     def search_list(self):
         self.label_comparision.configure(text="Number of Comparisions: 0")
         self.label_index.configure(text="")
-        print(self.search_element.get(),self.AlgonameVar.get())
+        print(self.search_element.get(),self.AlgonameVar)
         if self.search_element.get().isdigit():
-            startsearch = Thread(target=algochooser, args=(self.numbers,self.paint,self.label_comparision,self.label_index,"Linear Search",self.speed_var.get(),self.search_element.get()))
+            startsearch = Thread(target=algochooser, args=(self.numbers,self.paint,self.label_comparision,self.label_index,self.AlgonameVar,self.speed_var.get(),self.search_element.get()))
             startsearch.start()
         else:
             messagebox.showerror("Error!", "Please enter an integer!")
+    def clear_placeholder(self, event=None):
+        # when the user clicks the box, remove the hint text
+        if self.search_element.get() == self.placeholder:
+            self.search_element.delete(0, END)
+            self.search_element.config(fg="black")
 
-
-        
-root = Tk()
-Searching(root,'Linear Search')
-root.mainloop()
+    def add_placeholder(self, event=None):
+        # when the user leaves the box empty, bring the hint back
+        if self.search_element.get() == "":
+            self.search_element.insert(0, self.placeholder)
+            self.search_element.config(fg="grey")

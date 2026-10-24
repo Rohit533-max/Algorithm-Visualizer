@@ -1,10 +1,9 @@
 from tkinter import *
-from main_window import Window
 from threading import *
 
-
-class begin(Thread):
+class START(Thread):
     def run(self):
+        from main_window import Window
         root = Tk()
         Window(root)
         root.mainloop()

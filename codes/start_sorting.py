@@ -3,7 +3,7 @@ import pygame
 from threading import *
 from sorting import algochooser
 from random import sample,shuffle
-
+from start_searching import *
 class Sorting:
     def __init__(self,root,AlgonameVar):
         self.root = root
@@ -90,6 +90,10 @@ class Sorting:
         self.sort_button = Button(self.Frame1, text="Sort", command= self.sort_list, bg="royal blue", fg="white", padx=2, pady=2)
         self.sort_button.place(x=20,y=22)
 
+        #back button
+        self.back_btn = Button(self.Frame1, text= "Back", bg="RoyalBlue",command=self.back)
+        self.back_btn.place(x = 10, y = 15)
+
     def paint(self,colortype):
         #delete the previous charts
         self.canva.delete("all")
@@ -127,3 +131,8 @@ class Sorting:
         startsort = Thread(target=algochooser, args=(self.numbers,self.paint,self.label_comparison,self.AlgonameVar,self.speed.get()))
         startsort.start()
 
+    def back(self):
+        self.root.destroy()
+
+        Process = Start_Threading.START()
+        Process.start()

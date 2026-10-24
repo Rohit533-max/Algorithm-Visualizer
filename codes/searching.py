@@ -4,7 +4,7 @@ cmp = 0
 def algochooser(nums,paint,label_comparision,label_index,algo_name,speed,searched_element):
     global cmp
 
-    if algo_name == 'Linear Search':
+    if algo_name == "Linear Search":
         label_comparision.configure(text = "No of comparisions: 0")
         label_index.configure(text = "")
         linear_search(nums,paint,label_comparision,label_index,speed,int(searched_element))
@@ -14,7 +14,7 @@ def algochooser(nums,paint,label_comparision,label_index,algo_name,speed,searche
         label_comparision.configure(text = "No of comparisions: 0")
         label_index.configure(text ="")
         binary_search(nums,paint,label_comparision,label_index,speed, int(searched_element))
-
+        cmp = 0
     
 def linear_search(nums,paint,label_comparision,lable_index,speed,searched_element):
     global cmp
@@ -29,7 +29,7 @@ def linear_search(nums,paint,label_comparision,lable_index,speed,searched_elemen
                 elif x == i:
                     colors.append("green")
                 else:
-                    colors.append("antiquie white")
+                    colors.append("antique white")
 
             paint(colors)
             label_comparision.configure(text = "No of comparisions: " +str(cmp))
@@ -42,16 +42,17 @@ def linear_search(nums,paint,label_comparision,lable_index,speed,searched_elemen
                 else:
                     colors.append("antique white")
 
-                paint(colors)
-                label_comparision.configure(text = "No of comparisions: "+ str(cmp))
+            paint(colors)
+            label_comparision.configure(text = "No of comparisions: "+ str(cmp))
             time.sleep(1/speed)
     if index == -1:
         lable_index.configure(text = "Element not found")
     else:
-        lable_index.configure(text = "Element " + str(nums[index]) + "found at index " + str(index + 1))
+        lable_index.configure(text = "Element " + str(nums[index]) + " found at index " + str(index + 1))
 
 def binary_search(nums,paint,label_comarision,lable_index,speed,searched_element):
     global cmp
+    index = -1
     colors = ['antique white'] * len(nums)
     left,right = 0, len(nums)-1
     nums.sort()
@@ -62,7 +63,7 @@ def binary_search(nums,paint,label_comarision,lable_index,speed,searched_element
         time.sleep(1/speed)
         if nums[mid] == searched_element:
             cmp +=1
-            colors[mid] == 'green'
+            colors[mid] = 'green'
             paint(colors)
             label_comarision.configure(text = "No of comparisions: "+ str(cmp))
             index = mid
@@ -90,4 +91,4 @@ def binary_search(nums,paint,label_comarision,lable_index,speed,searched_element
     if index == -1:
         lable_index.configure(text = "Element not found")
     else:
-        lable_index.configure(text = "Element" + str(nums[index]) + "found at index" + str(index +1))
+        lable_index.configure(text = "Element " + str(nums[index]) + " found at index" + str(index +1))
