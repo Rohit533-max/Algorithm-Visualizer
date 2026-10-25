@@ -111,5 +111,4 @@ class Window:
 
             #go to the Run function
             self.Run2()
-
-  
+   

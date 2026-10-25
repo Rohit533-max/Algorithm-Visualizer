@@ -1,5 +1,4 @@
 from tkinter import *
-import pygame
 from threading import *
 from sorting import algochooser
 from random import sample,shuffle
@@ -132,7 +131,10 @@ class Sorting:
         startsort.start()
 
     def back(self):
+        if getattr(self, "_backing_out", False):
+            return
+    
+        self._backing_out = True
         self.root.destroy()
-
-        Process = Start_Threading.START()
-        Process.start()
+        import Start_Threading
+        Start_Threading.open_main_window()

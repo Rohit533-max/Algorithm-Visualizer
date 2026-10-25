@@ -138,13 +138,22 @@ class Searching:
         
     
     # Function for painting the bars
+    def back(self):
+        if getattr(self, "_backing_out", False):
+            return
+
+        self._backing_out = True
+        self.root.destroy()
+        import Start_Threading
+        Start_Threading.open_main_window()
+
     def paint(self,colortype):
         #delete the previous graph
         self.canva.delete("all")
 
         #start painting from here
         self.start_point = 2
-
+        
         # width of each bar
         for i in range(len(self.numbers)):
             self.canva.create_rectangle(
