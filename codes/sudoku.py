@@ -1,199 +1,305 @@
-"""Beginner Sudoku solver with a small Pygame visualizer.
 
-Run:
-    python -m pip install pygame
-    python game.py
-"""
 import pygame
+import time
+import random
 
 
-# 0 means an empty square.
-START_GRID = [
-    [5, 3, 0, 0, 7, 0, 0, 0, 0],
-    [6, 0, 0, 1, 9, 5, 0, 0, 0],
-    [0, 9, 8, 0, 0, 0, 0, 6, 0],
-    [8, 0, 0, 0, 6, 0, 0, 0, 3],
-    [4, 0, 0, 8, 0, 3, 0, 0, 1],
-    [7, 0, 0, 0, 2, 0, 0, 0, 6],
-    [0, 6, 0, 0, 0, 0, 2, 8, 0],
-    [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9],
-]
+class Grid:
+    def __init__(self, board, rows, cols, width, height, win):
+        self.rows = rows
+        self.cols = cols
+        self.width = width
+        self.height = height
+        self.win = win
 
-WINDOW_SIZE = 640
-CELL_SIZE = 60
-BOARD_SIZE = CELL_SIZE * 9
-LEFT = (WINDOW_SIZE - BOARD_SIZE) // 2
-TOP = 70
-BACKGROUND = (246, 244, 232)
-WHITE = (255, 255, 255)
-DARK = (48, 55, 69)
-BLUE = (48, 105, 190)
-GREEN = (38, 155, 91)
-RED = (210, 65, 65)
-GRID_LINE = (155, 145, 118)
+        self.cubes = [
+            [Cube(board[i][j], i, j, width, height) for j in range(cols)]
+            for i in range(rows)
+        ]
 
+        self.start_time = time.time()
+        self.play_time = 0
+        self.running = True
+        self.return_to_menu = False
+        self.update_model()
 
-def can_place(grid, row, col, number):
-    """Check whether number follows Sudoku rules at this empty square."""
-    for index in range(9):
-        if grid[row][index] == number:
+    def update_model(self):
+        self.model = [
+            [self.cubes[i][j].value for j in range(self.cols)]
+            for i in range(self.rows)
+        ]
+
+    def format_time(self):
+        minutes = self.play_time // 60
+        seconds = self.play_time % 60
+        return f"{minutes}:{seconds:02d}"
+
+    def draw(self):
+        self.win.fill((240, 239, 209))
+        gap = self.width / 9
+
+        for i in range(self.rows + 1):
+            thick = 4 if i % 3 == 0 and i != 0 else 1
+            pygame.draw.line(self.win, (0, 0, 0),
+                             (0, i * gap), (self.width, i * gap), thick)
+            pygame.draw.line(self.win, (0, 0, 0),
+                             (i * gap, 0), (i * gap, self.height), thick)
+
+        for row in self.cubes:
+            for cube in row:
+                cube.draw(self.win)
+
+    def draw_controls(self):
+        mouse = pygame.mouse.get_pos()
+        font = pygame.font.SysFont("calibri", 25)
+
+        color = (194, 167, 45) if 10 <= mouse[0] <= 230 and 550 <= mouse[1] <= 595 else (232, 191, 9)
+        pygame.mouse.set_cursor(
+            *(pygame.cursors.tri_left if color == (194, 167, 45) else pygame.cursors.arrow)
+        )
+
+        pygame.draw.rect(self.win, color, (10, 550, 220, 45))
+        self.win.blit(font.render("Back to main menu", True, (59, 60, 84)), (23, 560))
+
+        self.play_time = round(time.time() - self.start_time)
+        timer = font.render("Time - " + self.format_time(), True, (59, 60, 84))
+
+        pygame.draw.rect(self.win, (240, 239, 209), (350, 560, 190, 50))
+        self.win.blit(timer, (400, 560))
+
+    def redraw(self):
+        self.draw()
+        self.draw_controls()
+        pygame.display.update()
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+                return False
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if 10 <= x <= 230 and 550 <= y <= 595:
+                    self.running = False
+                    self.return_to_menu = True
+                    return False
+
+        return self.running
+
+    def solve_gui(self, speed):
+        if not self.running:
             return False
-        if grid[index][col] == number:
+
+        self.update_model()
+        empty = find_empty(self.model)
+
+        if empty is None:
+            return True
+
+        row, col = empty
+        gap = self.width / 9
+        delay = max(1, (101 - speed) // 3)
+
+        for num in range(1, 10):
+            if not self.handle_events():
+                return False
+
+            if valid(self.model, num, (row, col)):
+                self.model[row][col] = num
+                self.cubes[row][col].set(num)
+                self.redraw()
+
+                pygame.draw.rect(self.win, (0, 255, 0),
+                                 (col * gap, row * gap, gap, gap), 3)
+                self.draw_controls()
+                pygame.display.update()
+                pygame.time.delay(delay)
+
+                if self.solve_gui(speed):
+                    return True
+
+                if not self.running:
+                    return False
+
+                self.model[row][col] = 0
+                self.cubes[row][col].set(0)
+                self.redraw()
+
+                pygame.draw.rect(self.win, (255, 0, 0),
+                                 (col * gap, row * gap, gap, gap), 3)
+                self.draw_controls()
+                pygame.display.update()
+                pygame.time.delay(delay)
+
+        return False
+
+
+class Cube:
+    def __init__(self, value, row, col, width, height):
+        self.value = value
+        self.temp = 0
+        self.row = row
+        self.col = col
+        self.width = width
+        self.height = height
+
+    def draw(self, win):
+        font = pygame.font.SysFont("comicsans", 40)
+        gap = self.width / 9
+        x = self.col * gap
+        y = self.row * gap
+
+        if self.value != 0:
+            text = font.render(str(self.value), True, (0, 0, 0))
+            win.blit(text, (
+                x + gap / 2 - text.get_width() / 2,
+                y + gap / 2 - text.get_height() / 2
+            ))
+        elif self.temp != 0:
+            text = font.render(str(self.temp), True, (128, 128, 128))
+            win.blit(text, (x + 5, y + 5))
+
+    def set(self, value):
+        self.value = value
+
+
+def find_empty(board):
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                return i, j
+    return None
+
+
+def valid(board, num, pos):
+    row, col = pos
+
+    for j in range(9):
+        if board[row][j] == num and j != col:
             return False
 
-    box_row = (row // 3) * 3
-    box_col = (col // 3) * 3
-    for r in range(box_row, box_row + 3):
-        for c in range(box_col, box_col + 3):
-            if grid[r][c] == number:
+    for i in range(9):
+        if board[i][col] == num and i != row:
+            return False
+
+    box_x = col // 3
+    box_y = row // 3
+
+    for i in range(box_y * 3, box_y * 3 + 3):
+        for j in range(box_x * 3, box_x * 3 + 3):
+            if board[i][j] == num and (i, j) != pos:
                 return False
 
     return True
 
 
-def find_empty(grid):
-    """Return the first empty square as (row, column), or None if full."""
-    for row in range(9):
-        for col in range(9):
-            if grid[row][col] == 0:
-                return row, col
-    return None
+def valid_board(board):
+    for i in range(9):
+        for j in range(9):
+            num = board[i][j]
+
+            if num != 0:
+                board[i][j] = 0
+                is_valid = valid(board, num, (i, j))
+                board[i][j] = num
+
+                if not is_valid:
+                    return False
+
+    return True
 
 
-def solve_steps(grid):
-    """Solve with backtracking, yielding each guess so Pygame can show it."""
-    empty = find_empty(grid)
-    if empty is None:
-        return True
-
-    row, col = empty
-
-    for number in range(1, 10):
-        if can_place(grid, row, col, number):
-            grid[row][col] = number
-            yield row, col, number, True
-
-            if (yield from solve_steps(grid)):
-                return True
-
-            grid[row][col] = 0
-            yield row, col, number, False
-
-    return False
-
-
-def draw_board(screen, grid, candidate, font):
-    """Draw the numbers, current solver guess, and 3x3 grid lines."""
-    screen.fill(BACKGROUND)
-
-    for row in range(9):
-        for col in range(9):
-            x = LEFT + col * CELL_SIZE
-            y = TOP + row * CELL_SIZE
-
-            is_candidate = candidate is not None and candidate[:2] == (row, col)
-            if is_candidate:
-                pygame.draw.rect(screen, (226, 239, 222) if candidate[3] else (247, 224, 220),
-                                 (x, y, CELL_SIZE, CELL_SIZE))
-
-            number = grid[row][col]
-            if number:
-                if START_GRID[row][col] != 0:
-                    color = DARK
-                elif is_candidate:
-                    color = GREEN if candidate[3] else RED
-                else:
-                    color = BLUE
-
-                text = font.render(str(number), True, color)
-                screen.blit(text, text.get_rect(center=(x + CELL_SIZE // 2,
-                                                        y + CELL_SIZE // 2)))
-            elif is_candidate:
-                text = font.render(str(candidate[2]), True, RED)
-                screen.blit(text, text.get_rect(center=(x + CELL_SIZE // 2,
-                                                        y + CELL_SIZE // 2)))
-
-    for index in range(10):
-        thickness = 4 if index % 3 == 0 else 1
-        x = LEFT + index * CELL_SIZE
-        y = TOP + index * CELL_SIZE
-        pygame.draw.line(screen, GRID_LINE, (x, TOP), (x, TOP + BOARD_SIZE), thickness)
-        pygame.draw.line(screen, GRID_LINE, (LEFT, y), (LEFT + BOARD_SIZE, y), thickness)
-
-
-def main():
+def sudoku(speed):
     pygame.init()
-    pygame.display.set_caption("Sudoku Solver")
-    screen = pygame.display.set_mode((WINDOW_SIZE, WINDOW_SIZE + 100))
-    clock = pygame.time.Clock()
-    number_font = pygame.font.SysFont("calibri", 30)
-    message_font = pygame.font.SysFont("calibri", 20)
+    pygame.font.init()
 
-    grid = [row[:] for row in START_GRID]
-    steps = None
-    candidate = None
-    solving = False
-    paused = False
-    solved = False
-    last_step = pygame.time.get_ticks()
-    running = True
+    win = pygame.display.set_mode((540, 670))
+    pygame.display.set_caption("Sudoku Solver Visualizer")
 
-    while running:
+    boards = [
+        [
+            [7, 8, 0, 4, 0, 0, 1, 2, 0],
+            [6, 0, 0, 0, 7, 5, 0, 0, 9],
+            [0, 0, 0, 6, 0, 1, 0, 7, 8],
+            [0, 0, 7, 0, 4, 0, 2, 6, 0],
+            [0, 0, 1, 0, 5, 0, 9, 3, 0],
+            [9, 0, 4, 0, 6, 0, 0, 0, 5],
+            [0, 7, 0, 3, 0, 0, 0, 1, 2],
+            [1, 2, 0, 0, 0, 7, 4, 0, 0],
+            [0, 4, 9, 2, 0, 6, 0, 0, 7]
+        ],
+        [
+            [3, 0, 6, 5, 0, 8, 4, 0, 0],
+            [5, 2, 0, 0, 0, 0, 0, 0, 0],
+            [0, 8, 7, 0, 0, 0, 0, 3, 1],
+            [0, 0, 3, 0, 1, 0, 0, 8, 0],
+            [9, 0, 0, 8, 6, 3, 0, 0, 5],
+            [0, 5, 0, 0, 9, 0, 6, 0, 0],
+            [1, 3, 0, 0, 0, 0, 2, 5, 0],
+            [0, 0, 0, 0, 0, 0, 0, 7, 4],
+            [0, 0, 5, 2, 0, 6, 3, 0, 0]
+        ],
+        [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]
+        ]
+    ]
+
+    selected_board = [row[:] for row in random.choice(boards)]
+    board = Grid(selected_board, 9, 9, 540, 540, win)
+
+    if not valid_board(board.model):
+        print("Invalid Sudoku board")
+        pygame.quit()
+        return
+
+    board.redraw()
+
+    solved = board.solve_gui(max(1, min(100, int(speed))))
+
+    if not board.running:
+        pygame.quit()
+
+        if board.return_to_menu:
+            import Start_Threading
+            Start_Threading.open_main_window()
+
+        return
+
+    message = "Sudoku Solved!" if solved else "No Solution!"
+    color = (59, 60, 84) if solved else (255, 0, 0)
+
+    font = pygame.font.SysFont("comicsans", 45)
+    text = font.render(message, True, color)
+    win.blit(text, (100, 615))
+    pygame.display.update()
+
+    run = True
+
+    while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                run = False
 
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-                elif event.key == pygame.K_s and not solving and not solved:
-                    steps = solve_steps(grid)
-                    solving = True
-                elif event.key == pygame.K_SPACE and solving:
-                    paused = not paused
-                elif event.key == pygame.K_r:
-                    grid = [row[:] for row in START_GRID]
-                    steps = None
-                    candidate = None
-                    solving = False
-                    paused = False
-                    solved = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
 
-        # Advance the solver every 120 milliseconds.
-        now = pygame.time.get_ticks()
-        if solving and not paused and now - last_step >= 120:
-            try:
-                candidate = next(steps)
-            except StopIteration as result:
-                solving = False
-                solved = result.value
-                candidate = None
-            last_step = now
+                if 10 <= x <= 230 and 550 <= y <= 595:
+                    run = False
+                    pygame.quit()
 
-        draw_board(screen, grid, candidate, number_font)
+                    import Start_Threading
+                    Start_Threading.open_main_window()
+                    return
 
-        if solved:
-            message = "Solved! Press R to restart or Esc to quit."
-            message_color = GREEN
-        elif paused:
-            message = "Paused. Press Space to continue."
-            message_color = DARK
-        elif solving:
-            message = "Solving... Space pauses, R restarts."
-            message_color = DARK
-        else:
-            message = "Press S to solve, R to restart, Esc to quit."
-            message_color = DARK
-
-        text = message_font.render(message, True, message_color)
-        screen.blit(text, text.get_rect(center=(WINDOW_SIZE // 2, TOP + BOARD_SIZE + 45)))
-
-        pygame.display.flip()
-        clock.tick(60)
+        pygame.display.update()
 
     pygame.quit()
-
-
-if __name__ == "__main__":
-    main()
