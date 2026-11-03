@@ -45,6 +45,7 @@ class N_Queens:
 
         self.back_rect = pygame.Rect(15, 615, 215, 50)
         self.run()
+        self.return_to_menu = False
 
     # ------------------------------------------------------------------
     # DRAWING (your functions, with small changes)
@@ -128,7 +129,7 @@ class N_Queens:
         return None
 
     def solve(self, row):
-        """Same backtracking as your nQueens, but it pauses at each yield."""
+        
         if row == self.n:
             return True
 
@@ -168,7 +169,8 @@ class N_Queens:
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if self.back_rect.collidepoint(event.pos):
-                        running = False             # back to menu
+                        running = False 
+                        self.return_to_menu = True            # back to menu
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         self.speed = min(30, self.speed + 1)
@@ -187,7 +189,6 @@ class N_Queens:
                         self.candidate = None
                         self.attacker = None
                     last_step = now
-
             # draw everything
             self.screen.fill(self.BG)
             self.draw_board(self.screen, self.n, self.x)
@@ -206,6 +207,7 @@ class N_Queens:
 
         pygame.quit()      # no quit(): control goes back to main() and the menu
 
-
-if __name__ == "__main__":
-    N_Queens(8,5)
+        if self.return_to_menu:
+            import Start_Threading
+            Start_Threading.open_main_window()
+        return
