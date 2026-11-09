@@ -32,5 +32,6 @@ The Sorting Algorithm Visualizer window again has the option to change the searc
 <img width="676" height="877" alt="sudoku" src="https://github.com/user-attachments/assets/9e6f06fe-c48c-4bb6-b41b-f250e5f3a139" />
 
 **N-Queens**
-[https://github.com/Rohit533-max/Algorithm-Visualizer/blob/34a5b61da48d17a1e9b49be205fa568563ed9ecb/Demo/nqueens.gif](https://github.com/Rohit533-max/Algorithm-Visualizer/blob/main/Demo/nqueens.gif)
+
+![N-Queens](https://raw.githubusercontent.com/Rohit533-max/Algorithm-Visualizer/main/Demo/nqueens.gif)
 
